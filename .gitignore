@@ -1,0 +1,18 @@
+# Build artifact — regenerable via `node build-embed.mjs`; the data is already
+# embedded inside index.html, so we don't commit this 4.4 MB cache.
+data-martin.generated.json
+
+# Secrets — never commit API keys. The ElevenLabs key lives only in the
+# browser's localStorage at runtime, but guard against accidental local files.
+.env
+.env.*
+*.key
+secrets.*
+
+# Node / tooling
+node_modules/
+npm-debug.log*
+
+# OS noise
+.DS_Store
+Thumbs.db
