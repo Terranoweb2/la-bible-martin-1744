@@ -1,0 +1,1711 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Sainte Bible — Martin 1744</title>
+<meta name="description" content="Bible Martin (1744) : les 66 livres complets, Ancien et Nouveau Testament, paroles de Jésus en rouge, paroles de Dieu en bleu." />
+<style>
+  /* ===========================================================================
+     Design tokens — elegant dark theme
+     ========================================================================= */
+  :root {
+    --bg: #0e0f13;
+    --bg-2: #15171d;
+    --bg-3: #1c1f27;
+    --panel: #14161c;
+    --border: #272b35;
+    --border-soft: #20242d;
+    --text: #e8e6df;
+    --text-dim: #a3a09a;
+    --text-faint: #6f6d68;
+    --accent: #c9a24b;
+    --accent-soft: #e0c178;
+    --jesus: #ff5d5d;
+    --jesus-glow: rgba(255,93,93,.16);
+    --god: #5aa9ff;
+    --god-glow: rgba(90,169,255,.16);
+    --ok: #5fbf6f;
+    --warn: #e0a23a;
+    --err: #ff6b6b;
+    --radius: 14px;
+    --shadow: 0 10px 40px rgba(0,0,0,.45);
+    --reading: 1.125rem;
+    --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif;
+    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 700px at 80% -10%, #1a1d26 0%, var(--bg) 55%) fixed;
+    color: var(--text);
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  :focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 2px; border-radius: 6px; }
+  button { font-family: inherit; color: inherit; cursor: pointer; }
+
+  /* ===========================================================================
+     Layout
+     ========================================================================= */
+  .app {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    grid-template-rows: 100dvh;
+    overflow: hidden;
+  }
+
+  /* ---- Sidebar ---- */
+  .sidebar {
+    background: linear-gradient(180deg, var(--bg-2), var(--panel));
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .brand { padding: 18px 18px 14px; border-bottom: 1px solid var(--border-soft); }
+  .brand h1 {
+    margin: 0; font-family: var(--font-serif); font-size: 1.32rem; letter-spacing: .3px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .brand .crest {
+    width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 8px;
+    background: radial-gradient(circle at 30% 25%, #3a3526, #1d1b14);
+    border: 1px solid #3c3624; color: var(--accent-soft); font-size: 16px;
+  }
+  .brand p { margin: 6px 0 0; font-size: .78rem; color: var(--text-faint); letter-spacing: .5px; }
+
+  .search { padding: 12px 14px; border-bottom: 1px solid var(--border-soft); }
+  .search input {
+    width: 100%; padding: 10px 12px; background: var(--bg-3);
+    border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: .9rem;
+  }
+  .search input::placeholder { color: var(--text-faint); }
+
+  .tabs { display: flex; gap: 6px; padding: 12px 14px 6px; }
+  .tab {
+    flex: 1; padding: 9px 8px; background: transparent; border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text-dim); font-size: .82rem; font-weight: 600; transition: .18s;
+  }
+  .tab[aria-selected="true"] {
+    background: linear-gradient(180deg, #2a2620, #211e18); border-color: #4a4230; color: var(--accent-soft);
+  }
+
+  .book-list { flex: 1; overflow-y: auto; padding: 6px 10px 18px; min-height: 0; }
+  .book-group-title {
+    font-size: .68rem; text-transform: uppercase; letter-spacing: 1.4px;
+    color: var(--text-faint); padding: 14px 8px 6px;
+  }
+  .book-btn {
+    width: 100%; text-align: left; padding: 9px 11px; margin: 2px 0; background: transparent;
+    border: 1px solid transparent; border-radius: 9px; color: var(--text-dim); font-size: .9rem;
+    display: flex; justify-content: space-between; align-items: center; gap: 8px; transition: .14s;
+  }
+  .book-btn:hover { background: var(--bg-3); color: var(--text); }
+  .book-btn[aria-current="true"] {
+    background: linear-gradient(90deg, rgba(201,162,75,.16), transparent);
+    border-color: var(--border); color: var(--accent-soft); font-weight: 600;
+  }
+  .book-btn .count { font-size: .7rem; color: var(--text-faint); flex: none; display: inline-flex; align-items: center; gap: 5px; }
+  .book-btn .dl-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px rgba(95,191,111,.6); }
+
+  /* ---- Main reading area ---- */
+  .main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+
+  .topbar {
+    display: flex; align-items: center; gap: 10px; padding: 11px 18px;
+    border-bottom: 1px solid var(--border); background: rgba(20,22,28,.7); backdrop-filter: blur(8px);
+    flex-wrap: wrap;
+  }
+  .hamburger { display: none; background: var(--bg-3); border: 1px solid var(--border); border-radius: 9px; padding: 8px 11px; font-size: 1rem; }
+  .ref-nav { display: flex; align-items: center; gap: 8px; }
+  .nav-btn { background: var(--bg-3); border: 1px solid var(--border); border-radius: 9px; padding: 8px 12px; font-size: .9rem; transition: .14s; }
+  .nav-btn:hover:not(:disabled) { background: #232732; border-color: #3a3f4c; }
+  .nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+  select.chapter-select, select.translation-select {
+    background: var(--bg-3); border: 1px solid var(--border); border-radius: 9px;
+    padding: 8px 10px; color: var(--text); font-size: .88rem; font-family: inherit; max-width: 170px;
+  }
+
+  .current-ref { font-family: var(--font-serif); font-size: 1.05rem; color: var(--accent-soft); margin-right: auto; padding-left: 4px; }
+
+  .topbar-actions { display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    background: var(--bg-3); border: 1px solid var(--border); border-radius: 9px;
+    width: 38px; height: 38px; display: grid; place-items: center; font-size: 1rem; transition: .14s;
+  }
+  .icon-btn:hover:not(:disabled) { background: #232732; }
+  .icon-btn:disabled { opacity: .45; cursor: progress; }
+  .icon-btn.active { color: var(--accent-soft); border-color: #4a4230; background: #241f17; }
+
+  .status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--text-faint); flex: none; }
+  .status-dot.online { background: var(--ok); box-shadow: 0 0 8px rgba(95,191,111,.6); }
+  .status-dot.offline { background: var(--warn); }
+
+  /* Reading column */
+  .reader-scroll { flex: 1; overflow-y: auto; min-height: 0; scroll-behavior: smooth; }
+  .reader { max-width: 760px; margin: 0 auto; padding: 30px 28px 120px; }
+
+  .notice {
+    max-width: 760px; margin: 16px auto -6px; background: #181b22; border: 1px solid var(--border);
+    border-left: 3px solid var(--accent); border-radius: 11px; padding: 12px 14px;
+    color: var(--text-dim); font-size: .84rem; line-height: 1.55; display: flex; gap: 10px; align-items: flex-start;
+  }
+  .notice button {
+    margin-left: auto; flex: none; background: transparent; border: 1px solid var(--border);
+    border-radius: 7px; color: var(--text-faint); font-size: .75rem; padding: 4px 8px;
+  }
+
+  .chapter-heading { font-family: var(--font-serif); text-align: center; margin: 6px 0 6px; }
+  .chapter-heading .bk { display: block; font-size: 2rem; letter-spacing: .5px; }
+  .chapter-heading .ch { display: block; font-size: .85rem; letter-spacing: 3px; text-transform: uppercase; color: var(--text-faint); margin-top: 8px; }
+
+  .legend {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; align-items: center;
+    margin: 16px 0 26px; font-size: .76rem; color: var(--text-dim);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .swatch.j { background: var(--jesus); }
+  .swatch.g { background: var(--god); }
+  .source-tag { font-size: .68rem; letter-spacing: .5px; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; border: 1px solid var(--border); color: var(--text-faint); }
+  .source-tag.curated { color: var(--accent-soft); border-color: #4a4230; }
+  .source-tag.online { color: var(--god); border-color: #2c4a6e; }
+
+  .verses { font-family: var(--font-serif); font-size: var(--reading); line-height: 1.95; color: var(--text); }
+  .verse { transition: background .2s; border-radius: 6px; padding: 1px 3px; }
+  .verse .vnum {
+    font-family: var(--font-ui); font-size: .62em; font-weight: 700; color: var(--accent);
+    vertical-align: super; margin-right: 4px; user-select: none;
+  }
+  .verse.bookmarked { background: linear-gradient(90deg, rgba(201,162,75,.14), transparent); }
+  .verse .bm-flag { color: var(--accent); font-size: .8em; margin-left: 4px; }
+  .verse:hover { background: rgba(255,255,255,.03); cursor: pointer; }
+
+  .w-jesus { color: var(--jesus); text-shadow: 0 0 18px var(--jesus-glow); }
+  .w-god   { color: var(--god);   text-shadow: 0 0 18px var(--god-glow); }
+  body.no-color .w-jesus, body.no-color .w-god { color: inherit; text-shadow: none; }
+
+  mark.hit { background: var(--accent); color: #1a1206; border-radius: 3px; padding: 0 2px; }
+
+  /* Loading / error states */
+  .state-box { text-align: center; color: var(--text-faint); padding: 70px 20px; font-family: var(--font-serif); }
+  .state-box .big { font-size: 2.4rem; display: block; margin-bottom: 14px; }
+  .spinner {
+    width: 40px; height: 40px; margin: 0 auto 18px; border-radius: 50%;
+    border: 3px solid var(--border); border-top-color: var(--accent); animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .retry-btn {
+    margin-top: 18px; background: var(--bg-3); border: 1px solid var(--border); border-radius: 9px;
+    padding: 9px 16px; font-family: var(--font-ui); font-size: .88rem; color: var(--text);
+  }
+  .retry-btn:hover { background: #232732; }
+
+  /* Search results */
+  .results { font-family: var(--font-ui); }
+  .results h2 { font-family: var(--font-serif); font-size: 1.4rem; margin: 0 0 4px; }
+  .results .sub { color: var(--text-faint); font-size: .85rem; margin-bottom: 22px; }
+  .result-item {
+    width: 100%; text-align: left; background: var(--panel); border: 1px solid var(--border-soft);
+    border-radius: 11px; padding: 14px 16px; margin-bottom: 10px; transition: .14s;
+  }
+  .result-item:hover { border-color: #3a3f4c; background: var(--bg-3); }
+  .result-item .ref { color: var(--accent-soft); font-size: .82rem; font-weight: 600; margin-bottom: 4px; }
+  .result-item .snippet { font-family: var(--font-serif); color: var(--text-dim); line-height: 1.6; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #20242d; border: 1px solid var(--border); color: var(--text); padding: 11px 18px;
+    border-radius: 12px; box-shadow: var(--shadow); font-size: .88rem; opacity: 0; pointer-events: none;
+    transition: .25s; z-index: 50; max-width: 90vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Download progress bar */
+  .dl-progress {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    width: min(380px, 90vw); background: #1b1e26; border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: var(--shadow); padding: 12px 14px; z-index: 55;
+  }
+  .dl-progress[hidden] { display: none; }
+  .dl-head { display: flex; align-items: center; gap: 10px; }
+  .dl-label { flex: 1; font-size: .82rem; color: var(--text-dim); }
+  .dl-cancel { background: transparent; border: 1px solid var(--border); border-radius: 7px; color: var(--text-faint); font-size: .72rem; padding: 3px 8px; flex: none; }
+  .dl-bar { margin-top: 9px; height: 7px; background: var(--bg-3); border-radius: 6px; overflow: hidden; }
+  .dl-bar-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-soft)); border-radius: 6px; transition: width .2s; }
+
+  .scrim { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 18; }
+
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-thumb { background: #2b2f39; border-radius: 8px; border: 2px solid var(--bg); }
+  ::-webkit-scrollbar-thumb:hover { background: #3a3f4c; }
+
+  /* Responsive */
+  @media (max-width: 880px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar {
+      position: fixed; z-index: 20; top: 0; bottom: 0; left: 0; width: 86%; max-width: 340px;
+      transform: translateX(-105%); transition: transform .26s ease; box-shadow: var(--shadow);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .scrim.show { display: block; }
+    .hamburger { display: inline-block; }
+    .current-ref { font-size: .95rem; width: 100%; order: 5; padding-left: 0; }
+    .reader { padding: 22px 18px 120px; }
+    select.translation-select { max-width: 130px; }
+  }
+  @media (max-width: 520px) {
+    .chapter-heading .bk { font-size: 1.55rem; }
+    .nav-btn { padding: 8px 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; scroll-behavior: auto !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ============================ SIDEBAR ============================ -->
+  <aside class="sidebar" id="sidebar" aria-label="Navigation des livres">
+    <div class="brand">
+      <h1><span class="crest" aria-hidden="true">✝</span> Sainte Bible</h1>
+      <p>66 livres · Ancien &amp; Nouveau Testament</p>
+    </div>
+
+    <div class="search" role="search">
+      <label for="searchInput" style="position:absolute;left:-9999px">Rechercher dans la Bible</label>
+      <input id="searchInput" type="search" placeholder="🔍  Rechercher un mot, un verset…" autocomplete="off" />
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Testament">
+      <button class="tab" id="tabOld" role="tab" aria-selected="true" data-testament="old">Ancien (39)</button>
+      <button class="tab" id="tabNew" role="tab" aria-selected="false" data-testament="new">Nouveau (27)</button>
+    </div>
+
+    <nav class="book-list" id="bookList" aria-label="Liste des livres"></nav>
+  </aside>
+
+  <div class="scrim" id="scrim"></div>
+
+  <!-- ============================ MAIN ============================ -->
+  <main class="main">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger" aria-label="Ouvrir le menu des livres" aria-expanded="false">☰</button>
+
+      <div class="ref-nav">
+        <button class="nav-btn" id="prevBtn" title="Chapitre précédent (←)" aria-label="Chapitre précédent">‹</button>
+        <select class="chapter-select" id="chapterSelect" aria-label="Choisir le chapitre"></select>
+        <button class="nav-btn" id="nextBtn" title="Chapitre suivant (→)" aria-label="Chapitre suivant">›</button>
+      </div>
+
+      <span class="current-ref" id="currentRef" aria-live="polite"></span>
+
+      <div class="topbar-actions">
+        <span class="status-dot" id="statusDot" title="État de la connexion" role="img" aria-label="État de la connexion"></span>
+        <select class="translation-select" id="translationSelect" aria-label="Choisir la version du texte" title="Version du texte"></select>
+        <button class="icon-btn" id="downloadBookBtn" title="Télécharger ce livre pour la lecture hors-ligne" aria-label="Télécharger ce livre hors-ligne">📥</button>
+        <button class="icon-btn" id="fontDownBtn" title="Réduire la police" aria-label="Réduire la taille du texte">A−</button>
+        <button class="icon-btn" id="fontUpBtn" title="Agrandir la police" aria-label="Agrandir la taille du texte">A+</button>
+        <button class="icon-btn" id="colorBtn" title="Activer / désactiver les couleurs" aria-label="Basculer la coloration des paroles" aria-pressed="true">🎨</button>
+      </div>
+    </header>
+
+    <div class="reader-scroll" id="readerScroll">
+      <div class="reader" id="reader"></div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="dl-progress" id="dlProgress" role="status" aria-live="polite" hidden>
+  <div class="dl-head">
+    <span class="dl-label" id="dlLabel">Téléchargement…</span>
+    <button class="dl-cancel" id="dlCancel" type="button">Arrêter</button>
+  </div>
+  <div class="dl-bar"><div class="dl-bar-fill" id="dlBarFill"></div></div>
+</div>
+
+<script>
+"use strict";
+/* ===========================================================================
+   SAINTE BIBLE — Martin 1744 (single-file reader)
+   --------------------------------------------------------------------------
+   Strategy for "all 66 books complete" in a single offline-first file:
+     • BOOKS          → full canonical structure (66 books, real chapter counts).
+     • CURATED        → key chapters with Jesus(red)/God(blue) markup, OFFLINE.
+     • On-demand fetch→ integral chapter text pulled from getbible.net, which
+                        hosts the GENUINE French David Martin 1744 ("martin"),
+                        then cached in localStorage.
+     • Book prefetch  → "📥" downloads EVERY chapter of the open book so the
+                        whole book is then readable fully offline.
+   Architecture: STATE · DATA · NETWORK · LOGIC (pure) · VIEW (render) · ACTIONS
+   ========================================================================= */
+
+/* ---------------------------------------------------------------------------
+   DATA — canonical 66 books (Protestant canon used by the Martin 1744 Bible).
+   id matches getbible.net book numbers (Genèse=1 … Apocalypse=66).
+   ------------------------------------------------------------------------- */
+const BOOKS = [
+  // ---- Ancien Testament (39) ----
+  { id: 1,  name: "Genèse",                 t: "old", ch: 50 },
+  { id: 2,  name: "Exode",                  t: "old", ch: 40 },
+  { id: 3,  name: "Lévitique",              t: "old", ch: 27 },
+  { id: 4,  name: "Nombres",                t: "old", ch: 36 },
+  { id: 5,  name: "Deutéronome",            t: "old", ch: 34 },
+  { id: 6,  name: "Josué",                  t: "old", ch: 24 },
+  { id: 7,  name: "Juges",                  t: "old", ch: 21 },
+  { id: 8,  name: "Ruth",                   t: "old", ch: 4  },
+  { id: 9,  name: "1 Samuel",               t: "old", ch: 31 },
+  { id: 10, name: "2 Samuel",               t: "old", ch: 24 },
+  { id: 11, name: "1 Rois",                 t: "old", ch: 22 },
+  { id: 12, name: "2 Rois",                 t: "old", ch: 25 },
+  { id: 13, name: "1 Chroniques",           t: "old", ch: 29 },
+  { id: 14, name: "2 Chroniques",           t: "old", ch: 36 },
+  { id: 15, name: "Esdras",                 t: "old", ch: 10 },
+  { id: 16, name: "Néhémie",                t: "old", ch: 13 },
+  { id: 17, name: "Esther",                 t: "old", ch: 10 },
+  { id: 18, name: "Job",                    t: "old", ch: 42 },
+  { id: 19, name: "Psaumes",                t: "old", ch: 150 },
+  { id: 20, name: "Proverbes",              t: "old", ch: 31 },
+  { id: 21, name: "Ecclésiaste",            t: "old", ch: 12 },
+  { id: 22, name: "Cantique des Cantiques", t: "old", ch: 8  },
+  { id: 23, name: "Ésaïe",                  t: "old", ch: 66 },
+  { id: 24, name: "Jérémie",                t: "old", ch: 52 },
+  { id: 25, name: "Lamentations",           t: "old", ch: 5  },
+  { id: 26, name: "Ézéchiel",               t: "old", ch: 48 },
+  { id: 27, name: "Daniel",                 t: "old", ch: 12 },
+  { id: 28, name: "Osée",                   t: "old", ch: 14 },
+  { id: 29, name: "Joël",                   t: "old", ch: 3  },
+  { id: 30, name: "Amos",                   t: "old", ch: 9  },
+  { id: 31, name: "Abdias",                 t: "old", ch: 1  },
+  { id: 32, name: "Jonas",                  t: "old", ch: 4  },
+  { id: 33, name: "Michée",                 t: "old", ch: 7  },
+  { id: 34, name: "Nahum",                  t: "old", ch: 3  },
+  { id: 35, name: "Habacuc",                t: "old", ch: 3  },
+  { id: 36, name: "Sophonie",               t: "old", ch: 3  },
+  { id: 37, name: "Aggée",                  t: "old", ch: 2  },
+  { id: 38, name: "Zacharie",               t: "old", ch: 14 },
+  { id: 39, name: "Malachie",               t: "old", ch: 4  },
+  // ---- Nouveau Testament (27) ----
+  { id: 40, name: "Matthieu",               t: "new", ch: 28 },
+  { id: 41, name: "Marc",                   t: "new", ch: 16 },
+  { id: 42, name: "Luc",                    t: "new", ch: 24 },
+  { id: 43, name: "Jean",                   t: "new", ch: 21 },
+  { id: 44, name: "Actes",                  t: "new", ch: 28 },
+  { id: 45, name: "Romains",                t: "new", ch: 16 },
+  { id: 46, name: "1 Corinthiens",          t: "new", ch: 16 },
+  { id: 47, name: "2 Corinthiens",          t: "new", ch: 13 },
+  { id: 48, name: "Galates",                t: "new", ch: 6  },
+  { id: 49, name: "Éphésiens",              t: "new", ch: 6  },
+  { id: 50, name: "Philippiens",            t: "new", ch: 4  },
+  { id: 51, name: "Colossiens",             t: "new", ch: 4  },
+  { id: 52, name: "1 Thessaloniciens",      t: "new", ch: 5  },
+  { id: 53, name: "2 Thessaloniciens",      t: "new", ch: 3  },
+  { id: 54, name: "1 Timothée",             t: "new", ch: 6  },
+  { id: 55, name: "2 Timothée",             t: "new", ch: 4  },
+  { id: 56, name: "Tite",                   t: "new", ch: 3  },
+  { id: 57, name: "Philémon",               t: "new", ch: 1  },
+  { id: 58, name: "Hébreux",                t: "new", ch: 13 },
+  { id: 59, name: "Jacques",                t: "new", ch: 5  },
+  { id: 60, name: "1 Pierre",               t: "new", ch: 5  },
+  { id: 61, name: "2 Pierre",               t: "new", ch: 3  },
+  { id: 62, name: "1 Jean",                 t: "new", ch: 5  },
+  { id: 63, name: "2 Jean",                 t: "new", ch: 1  },
+  { id: 64, name: "3 Jean",                 t: "new", ch: 1  },
+  { id: 65, name: "Jude",                   t: "new", ch: 1  },
+  { id: 66, name: "Apocalypse",             t: "new", ch: 22 }
+];
+
+/* ---------------------------------------------------------------------------
+   CURATED — offline key chapters with colored markup.
+   Key = "bookId:chapter" (1-based chapter). Markers: {j}…{/j} red, {g}…{/g} blue.
+   These take precedence over the online text so the signature coloring works
+   even with no connection.
+   ------------------------------------------------------------------------- */
+const CURATED = {
+  "1:1": [ // Genèse 1 — Dieu parle (bleu)
+    "Au commencement Dieu créa les cieux et la terre.",
+    "Et la terre était sans forme, et vide, et les ténèbres étaient sur la face de l'abîme; et l'Esprit de Dieu se mouvait sur le dessus des eaux.",
+    "Et Dieu dit: {g}Que la lumière soit;{/g} et la lumière fut.",
+    "Et Dieu vit que la lumière était bonne; et Dieu sépara la lumière des ténèbres.",
+    "Et Dieu nomma la lumière, jour; et les ténèbres, nuit. Ainsi fut le soir, ainsi fut le matin; ce fut le premier jour.",
+    "Puis Dieu dit: {g}Qu'il y ait une étendue entre les eaux, et qu'elle sépare les eaux d'avec les eaux.{/g}",
+    "Dieu donc fit l'étendue, et il sépara les eaux qui sont au-dessous de l'étendue d'avec celles qui sont au-dessus de l'étendue; et il fut ainsi.",
+    "Et Dieu nomma l'étendue, cieux. Ainsi fut le soir, ainsi fut le matin; ce fut le second jour.",
+    "Puis Dieu dit: {g}Que les eaux qui sont au-dessous des cieux soient rassemblées en un lieu, et que le sec paraisse;{/g} et il fut ainsi.",
+    "Et Dieu nomma le sec, terre; et il nomma l'amas des eaux, mers; et Dieu vit que cela était bon.",
+    "Puis Dieu dit: {g}Que la terre pousse son jet, de l'herbe portant de la semence, et des arbres fruitiers portant du fruit selon leur espèce;{/g} et il fut ainsi.",
+    "Dieu dit aussi: {g}Faisons l'homme à notre image, selon notre ressemblance, et qu'il domine sur les poissons de la mer, et sur les oiseaux des cieux.{/g}",
+    "Dieu donc créa l'homme à son image; il le créa à l'image de Dieu; il les créa mâle et femelle.",
+    "Et Dieu les bénit, et leur dit: {g}Croissez et multipliez, et remplissez la terre, et l'assujettissez.{/g}",
+    "Et Dieu vit tout ce qu'il avait fait, et voilà, il était très-bon. Ainsi fut le soir, ainsi fut le matin; ce fut le sixième jour."
+  ],
+  "2:20": [ // Exode 20 — les Dix Commandements (bleu)
+    "Alors Dieu prononça toutes ces paroles, disant:",
+    "{g}Je suis l'Éternel ton Dieu, qui t'ai retiré du pays d'Égypte, de la maison de servitude.{/g}",
+    "{g}Tu n'auras point d'autres dieux devant ma face.{/g}",
+    "{g}Tu ne te feras point d'image taillée, ni aucune ressemblance des choses qui sont là-haut aux cieux, ni ici-bas sur la terre.{/g}",
+    "{g}Tu ne te prosterneras point devant elles, et ne les serviras point; car je suis l'Éternel ton Dieu, le Dieu fort, qui est jaloux.{/g}",
+    "{g}Et qui fais miséricorde jusqu'à mille générations à ceux qui m'aiment, et qui gardent mes commandements.{/g}",
+    "{g}Tu ne prendras point le Nom de l'Éternel ton Dieu en vain; car l'Éternel ne tiendra point pour innocent celui qui aura pris son Nom en vain.{/g}",
+    "{g}Souviens-toi du jour du repos pour le sanctifier.{/g}",
+    "{g}Tu travailleras six jours, et tu feras toute ton œuvre.{/g}",
+    "{g}Mais le septième jour est le repos de l'Éternel ton Dieu; tu ne feras aucune œuvre en ce jour-là.{/g}",
+    "{g}Honore ton père et ta mère, afin que tes jours soient prolongés sur la terre que l'Éternel ton Dieu te donne.{/g}",
+    "{g}Tu ne tueras point.{/g}",
+    "{g}Tu ne paillarderas point.{/g}",
+    "{g}Tu ne déroberas point.{/g}",
+    "{g}Tu ne diras point faux témoignage contre ton prochain.{/g}",
+    "{g}Tu ne convoiteras point la maison de ton prochain, ni sa femme, ni son serviteur, ni rien qui soit à ton prochain.{/g}"
+  ],
+  "19:1": [ // Psaume 1
+    "Bienheureux est l'homme qui ne marche point selon le conseil des méchants, et qui ne s'arrête point dans la voie des pécheurs.",
+    "Mais qui prend son plaisir en la Loi de l'Éternel, et qui médite jour et nuit en sa Loi.",
+    "Car il sera comme un arbre planté près des ruisseaux d'eaux, qui rend son fruit en sa saison, et duquel le feuillage ne se flétrit point.",
+    "Il n'en sera pas ainsi des méchants; mais ils seront comme la balle que le vent chasse au loin.",
+    "C'est pourquoi les méchants ne subsisteront point au jugement, ni les pécheurs dans l'assemblée des justes.",
+    "Car l'Éternel connaît la voie des justes; mais la voie des méchants périra."
+  ],
+  "19:23": [ // Psaume 23
+    "L'Éternel est mon berger, je n'aurai point de disette.",
+    "Il me fait reposer dans des parcs herbeux, et me mène le long des eaux paisibles.",
+    "Il restaure mon âme, et me conduit par les sentiers de la justice, pour l'amour de son Nom.",
+    "Même quand je marcherais par la vallée de l'ombre de la mort, je ne craindrais aucun mal; car tu es avec moi; ton bâton et ta houlette sont ceux qui me consolent.",
+    "Tu dresses la table devant moi, à la vue de ceux qui me serrent; tu as oint ma tête d'huile; ma coupe est comble.",
+    "Certainement le bien et la gratuité m'accompagneront tous les jours de ma vie, et mon habitation sera dans la maison de l'Éternel pour longtemps."
+  ],
+  "23:53": [ // Ésaïe 53
+    "Qui est-ce qui a cru à notre prédication, et à qui a été révélé le bras de l'Éternel?",
+    "Car il est monté comme un rejeton devant lui, et comme une racine sortant d'une terre altérée; il n'y a en lui ni forme ni apparence.",
+    "Il est le méprisé et le rejeté des hommes, homme de douleurs, et sachant ce que c'est que la langueur.",
+    "Mais il a porté nos langueurs, et il a chargé nos douleurs; et nous avons estimé qu'étant frappé, il était battu de Dieu, et affligé.",
+    "Or il était navré pour nos forfaits, et froissé pour nos iniquités; l'amende qui nous apporte la paix a été sur lui, et par sa meurtrissure nous avons la guérison.",
+    "Nous avons tous été errants comme des brebis; nous nous sommes détournés chacun en suivant son propre chemin, et l'Éternel a fait venir sur lui l'iniquité de nous tous.",
+    "Chacun s'est détourné de son chemin; mais l'Éternel a fait venir sur lui l'iniquité de nous tous."
+  ],
+  "40:5": [ // Matthieu 5 — Sermon sur la montagne (rouge)
+    "Or Jésus voyant tout ce peuple, monta sur une montagne; et s'étant assis, ses Disciples s'approchèrent de lui.",
+    "Et ayant commencé à parler, il les enseignait, disant:",
+    "{j}Bienheureux sont les pauvres en esprit; car le Royaume des cieux est à eux.{/j}",
+    "{j}Bienheureux sont ceux qui mènent deuil; car ils seront consolés.{/j}",
+    "{j}Bienheureux sont les débonnaires; car ils hériteront la terre.{/j}",
+    "{j}Bienheureux sont ceux qui sont affamés et altérés de la justice; car ils seront rassasiés.{/j}",
+    "{j}Bienheureux sont les miséricordieux; car la miséricorde leur sera faite.{/j}",
+    "{j}Bienheureux sont ceux qui sont nets de cœur; car ils verront Dieu.{/j}",
+    "{j}Bienheureux sont ceux qui procurent la paix; car ils seront appelés enfants de Dieu.{/j}",
+    "{j}Bienheureux sont ceux qui sont persécutés pour la justice; car le Royaume des cieux est à eux.{/j}",
+    "{j}Vous êtes le sel de la terre; mais si le sel perd sa saveur, avec quoi le salera-t-on?{/j}",
+    "{j}Vous êtes la lumière du monde; une ville située sur une montagne ne peut être cachée.{/j}",
+    "{j}On n'allume pas non plus la lampe pour la mettre sous un boisseau, mais sur le chandelier, et elle éclaire tous ceux qui sont dans la maison.{/j}",
+    "{j}Ainsi, que votre lumière luise devant les hommes, afin qu'ils voient vos bonnes œuvres, et qu'ils glorifient votre Père qui est aux cieux.{/j}"
+  ],
+  "42:15": [ // Luc 15 — la brebis perdue & le fils prodigue (rouge)
+    "Or tous les péagers et les gens de mauvaise vie s'approchaient de lui pour l'entendre.",
+    "Mais les Pharisiens et les Scribes murmuraient, disant: Celui-ci reçoit les gens de mauvaise vie, et mange avec eux.",
+    "Mais il leur proposa cette parabole, disant:",
+    "{j}Qui est l'homme d'entre vous qui ayant cent brebis, s'il en perd une, ne laisse les quatre-vingt-dix-neuf au désert, et ne s'en aille après celle qui est perdue, jusqu'à ce qu'il l'ait trouvée?{/j}",
+    "{j}Et qui l'ayant trouvée ne la mette sur ses épaules bien joyeux;{/j}",
+    "{j}Et étant revenu en sa maison, n'appelle ses amis et ses voisins, leur disant: Réjouissez-vous avec moi, car j'ai trouvé ma brebis qui était perdue?{/j}",
+    "{j}Je vous dis qu'il y aura de même de la joie au ciel pour un seul pécheur qui vient à se repentir, plus que pour quatre-vingt-dix-neuf justes, qui n'ont pas besoin de repentance.{/j}",
+    "{j}Un homme avait deux fils;{/j}",
+    "{j}Et le plus jeune dit à son père: Mon père, donne-moi la part du bien qui m'appartient; et il leur partagea ses biens.{/j}",
+    "{j}Et le plus jeune fils s'en alla dehors en un pays éloigné, et là il dissipa son bien en vivant dans la débauche.{/j}",
+    "{j}Étant donc revenu à soi-même, il dit: Combien y a-t-il de mercenaires dans la maison de mon père, qui ont du pain en abondance, et moi je meurs de faim!{/j}",
+    "{j}Je me lèverai, et m'en irai vers mon père, et je lui dirai: Mon père, j'ai péché contre le ciel et devant toi;{/j}",
+    "{j}Et son père le vit, et fut touché de compassion, et courant à lui, se jeta à son cou et le baisa.{/j}",
+    "{j}Car mon fils que voici, était mort, et il est ressuscité; il était perdu, et il est retrouvé. Et ils commencèrent à faire bonne chère.{/j}"
+  ],
+  "43:3": [ // Jean 3 — Nicodème (rouge)
+    "Or il y avait un homme d'entre les Pharisiens, nommé Nicodème, qui était un des principaux d'entre les Juifs.",
+    "Il vint de nuit à Jésus, et lui dit: Maître, nous savons que tu es un Docteur venu de Dieu.",
+    "Jésus répondit, et lui dit: {j}En vérité, en vérité je te dis: si quelqu'un n'est né de nouveau, il ne peut point voir le Royaume de Dieu.{/j}",
+    "Nicodème lui dit: comment peut naître un homme quand il est vieux?",
+    "Jésus répondit: {j}En vérité, en vérité je te dis: si quelqu'un n'est né d'eau et d'esprit, il ne peut entrer dans le Royaume de Dieu.{/j}",
+    "{j}Ce qui est né de la chair, est chair; et ce qui est né de l'Esprit, est esprit.{/j}",
+    "{j}Ne t'étonne point de ce que je t'ai dit: il vous faut être nés de nouveau.{/j}",
+    "{j}Le vent souffle où il veut, et tu en entends le son; mais tu ne sais d'où il vient, ni où il va: il en est ainsi de tout homme qui est né de l'Esprit.{/j}",
+    "{j}Car Dieu a tant aimé le monde, qu'il a donné son Fils unique, afin que quiconque croit en lui ne périsse point, mais qu'il ait la vie éternelle.{/j}",
+    "{j}Car Dieu n'a point envoyé son Fils au monde pour condamner le monde, mais afin que le monde soit sauvé par lui.{/j}"
+  ],
+  "43:14": [ // Jean 14 — « Je suis le chemin » (rouge)
+    "{j}Que votre cœur ne soit point agité; vous croyez en Dieu, croyez aussi en moi.{/j}",
+    "{j}Il y a plusieurs demeures dans la maison de mon Père; s'il était autrement, je vous l'eusse dit; je vais vous préparer le lieu.{/j}",
+    "{j}Et quand je m'en serai allé, et que je vous aurai préparé le lieu, je retournerai, et je vous prendrai avec moi; afin que là où je suis, vous y soyez aussi.{/j}",
+    "{j}Et vous savez où je vais, et vous en savez le chemin.{/j}",
+    "Thomas lui dit: Seigneur, nous ne savons point où tu vas, comment donc pouvons-nous en savoir le chemin?",
+    "Jésus lui dit: {j}Je suis le chemin, et la vérité, et la vie; nul ne vient au Père que par moi.{/j}",
+    "{j}Si vous m'eussiez connu, vous eussiez aussi connu mon Père; mais dès maintenant vous le connaissez, et vous l'avez vu.{/j}",
+    "{j}Si vous m'aimez, gardez mes commandements.{/j}",
+    "{j}Et je prierai le Père, et il vous donnera un autre Consolateur, pour demeurer avec vous éternellement.{/j}",
+    "{j}Je vous laisse la paix, je vous donne ma paix; je ne vous la donne point comme le monde la donne. Que votre cœur ne soit point agité ni craintif.{/j}"
+  ],
+  "66:21": [ // Apocalypse 21 — paroles du trône (rouge)
+    "Puis je vis un nouveau ciel et une nouvelle terre; car le premier ciel et la première terre avaient disparu, et la mer n'était plus.",
+    "Et moi Jean je vis la sainte Cité, la nouvelle Jérusalem, qui descendait du ciel, d'auprès de Dieu, parée comme une épouse qui s'est ornée pour son mari.",
+    "Et j'entendis une grande voix du ciel, disant: Voici le Tabernacle de Dieu avec les hommes, et il habitera avec eux; et ils seront son peuple.",
+    "Et Dieu essuiera toute larme de leurs yeux, et la mort ne sera plus; et il n'y aura plus ni deuil, ni cri, ni travail; car les premières choses sont passées.",
+    "Et celui qui était assis sur le trône, dit: {j}Voici, je fais toutes choses nouvelles. Écris, car ces paroles sont véritables et certaines.{/j}",
+    "Il me dit aussi: {j}Tout est accompli; je suis l'Alpha et l'Oméga, le commencement et la fin. À celui qui aura soif, je lui donnerai de la fontaine d'eau vive, sans qu'elle lui coûte rien.{/j}",
+    "{j}Celui qui vaincra, héritera toutes choses; et je lui serai Dieu, et il me sera fils.{/j}"
+  ]
+};
+
+/* ---------------------------------------------------------------------------
+   STATE
+   ------------------------------------------------------------------------- */
+const STORAGE_KEY = "biblemartin.state.v2";
+/* Cache prefix bumped to v3: prior versions may hold stale English text cached
+   from the old bolls.life source; v3 starts clean with the real French Martin. */
+const CACHE_PREFIX = "biblemartin.cache.v3:";
+const API_BASE = "https://api.getbible.net/v2";
+/* getbible.net serves the GENUINE French David Martin 1744 under code "martin".
+   It is the single authoritative source used everywhere in this reader. */
+const TRANSLATION_CANDIDATES = ["martin"];
+
+/** @typedef {{testament:string, bookId:number, chapter:number, fontSize:number,
+ *             color:boolean, bookmarks:string[], translation:string,
+ *             translationName:string, noticeDismissed:boolean}} AppState */
+
+/** @type {AppState} */
+const DEFAULT_STATE = {
+  testament: "old",
+  bookId: 1,
+  chapter: 1,
+  fontSize: 1.125,
+  color: true,
+  bookmarks: [],
+  translation: "martin",      // getbible.net code for the real French Martin 1744
+  translationName: "Martin 1744",
+  noticeDismissed: false
+};
+
+let state = loadState();
+let searchMode = false;
+let renderToken = 0;          // guards against out-of-order async renders
+let frenchTranslations = [];  // [{code, name}] available versions (Martin 1744)
+let prefetchAbort = false;    // cooperative cancel flag for book download
+
+/* ---------------------------------------------------------------------------
+   LOGIC — pure helpers (no DOM, no network)
+   ------------------------------------------------------------------------- */
+
+/**
+ * Escape HTML special characters to prevent XSS when inserting dynamic text.
+ * @param {string} str
+ * @returns {string}
+ */
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+/**
+ * Find a book object by its numeric id.
+ * @param {number} id
+ * @returns {object|undefined}
+ */
+function getBook(id) { return BOOKS.find(b => b.id === id); }
+
+/**
+ * Return the list of books for a given testament.
+ * @param {string} testament - 'old' | 'new'
+ * @returns {object[]}
+ */
+function booksOf(testament) { return BOOKS.filter(b => b.t === testament); }
+
+/**
+ * Build a stable verse key used for bookmarks and DOM ids.
+ * @param {number} bookId
+ * @param {number} chapter - 1-based
+ * @param {number} verse   - 1-based
+ * @returns {string}
+ */
+function verseKey(bookId, chapter, verse) { return bookId + ":" + chapter + ":" + verse; }
+
+/**
+ * Build the CURATED lookup key for a book/chapter.
+ * @param {number} bookId
+ * @param {number} chapter - 1-based
+ * @returns {string}
+ */
+function curatedKey(bookId, chapter) { return bookId + ":" + chapter; }
+
+/**
+ * Convert raw verse markup ({j}/{g}) into safe HTML.
+ * Escape ALL text first, then translate the (now-escaped) markers into trusted
+ * spans, so content text can never inject markup.
+ * @param {string} raw
+ * @returns {string} safe HTML
+ */
+function renderVerseHtml(raw) {
+  return escapeHtml(raw)
+    .replace(/\{j\}/g, '<span class="w-jesus">').replace(/\{\/j\}/g, "</span>")
+    .replace(/\{g\}/g, '<span class="w-god">').replace(/\{\/g\}/g, "</span>");
+}
+
+/**
+ * Strip markers to obtain plain text (for search + snippets).
+ * @param {string} raw
+ * @returns {string}
+ */
+function plainText(raw) { return raw.replace(/\{\/?[jg]\}/g, ""); }
+
+/**
+ * Clean raw API verse text: drop Strong's numbers, footnote tags, any HTML and
+ * bracket markers, then collapse whitespace. Output is later HTML-escaped.
+ * @param {string} raw
+ * @returns {string}
+ */
+function sanitizeApiText(raw) {
+  return String(raw)
+    .replace(/<S>.*?<\/S>/gi, "")
+    .replace(/<sup>.*?<\/sup>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\[(?:\d+|[a-z])\]/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Lowercase + remove diacritics for accent-insensitive matching.
+ * @param {string} s
+ * @returns {string}
+ */
+function normalize(s) { return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+
+/**
+ * Compute previous/next chapter navigation across the whole canon.
+ * @param {number} bookId
+ * @param {number} chapter - 1-based
+ * @returns {{prev:{bookId:number,chapter:number}|null, next:{bookId:number,chapter:number}|null}}
+ */
+function neighbors(bookId, chapter) {
+  const book = getBook(bookId);
+  if (!book) return { prev: null, next: null };
+  const idx = BOOKS.findIndex(b => b.id === bookId);
+  let prev = null, next = null;
+  if (chapter > 1) prev = { bookId, chapter: chapter - 1 };
+  else if (idx > 0) { const pb = BOOKS[idx - 1]; prev = { bookId: pb.id, chapter: pb.ch }; }
+  if (chapter < book.ch) next = { bookId, chapter: chapter + 1 };
+  else if (idx < BOOKS.length - 1) { const nb = BOOKS[idx + 1]; next = { bookId: nb.id, chapter: 1 }; }
+  return { prev, next };
+}
+
+/**
+ * Rank a French translation name by closeness to the requested Martin text.
+ * @param {string} name
+ * @returns {number} lower = more preferred
+ */
+function frenchRank(name) {
+  const n = (name || "").toLowerCase();
+  if (n.includes("martin")) return 0;
+  if (n.includes("ostervald")) return 1;
+  if (n.includes("segond")) return 2;
+  if (n.includes("darby")) return 3;
+  if (n.includes("semeur") || n.includes("bds")) return 4;
+  return 5;
+}
+
+/**
+ * Compute the list of chapters of a book that are NOT yet available offline
+ * (neither curated nor cached for the given translation code).
+ * Pure given a readCache implementation — used by prefetch + self-tests.
+ * @param {object} book
+ * @param {string} code
+ * @returns {number[]} 1-based chapter numbers still to download
+ */
+function pendingChapters(book, code) {
+  const list = [];
+  if (!book) return list;
+  for (let c = 1; c <= book.ch; c++) {
+    if (CURATED[curatedKey(book.id, c)]) continue;
+    if (code && readCache(code, book.id, c)) continue;
+    list.push(c);
+  }
+  return list;
+}
+
+/**
+ * Whether every chapter of a book is available offline (curated or cached).
+ * @param {object} book
+ * @param {string} code
+ * @returns {boolean}
+ */
+function isBookComplete(book, code) {
+  if (!book) return false;
+  for (let c = 1; c <= book.ch; c++) {
+    if (CURATED[curatedKey(book.id, c)]) continue;
+    if (code && readCache(code, book.id, c)) continue;
+    return false;
+  }
+  return true;
+}
+
+/* ---------------------------------------------------------------------------
+   PERSISTENCE
+   ------------------------------------------------------------------------- */
+
+/**
+ * Load persisted state from localStorage, falling back to defaults and
+ * validating referenced book/chapter still exist.
+ * @returns {AppState}
+ */
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { ...DEFAULT_STATE };
+    const merged = { ...DEFAULT_STATE, ...JSON.parse(raw) };
+    const book = getBook(merged.bookId);
+    if (!book) return { ...DEFAULT_STATE };
+    if (merged.chapter < 1 || merged.chapter > book.ch) merged.chapter = 1;
+    merged.testament = book.t;
+    if (!Array.isArray(merged.bookmarks)) merged.bookmarks = [];
+    // Always pin to the genuine French Martin 1744 served by getbible.net,
+    // overriding any old bolls.life translation code stored previously.
+    merged.translation = "martin";
+    merged.translationName = "Martin 1744";
+    return merged;
+  } catch (err) {
+    console.warn("État illisible, réinitialisation:", err);
+    return { ...DEFAULT_STATE };
+  }
+}
+
+/** Persist current state to localStorage (best-effort). @returns {void} */
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch (err) { console.warn("Impossible d'enregistrer l'état:", err); }
+}
+
+/**
+ * Read a cached chapter (array of {verse,text}) from localStorage.
+ * @param {string} code
+ * @param {number} bookId
+ * @param {number} chapter
+ * @returns {{verse:number,text:string}[]|null}
+ */
+function readCache(code, bookId, chapter) {
+  try {
+    const raw = localStorage.getItem(CACHE_PREFIX + code + ":" + bookId + ":" + chapter);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data : null;
+  } catch { return null; }
+}
+
+/**
+ * Write a chapter to the cache. On quota errors during a bulk prefetch we want
+ * to STOP rather than wipe earlier progress, so we signal failure by throwing.
+ * @param {string} code
+ * @param {number} bookId
+ * @param {number} chapter
+ * @param {{verse:number,text:string}[]} verses
+ * @param {boolean} [keepOnQuota=false] - if true, do not auto-clear cache on quota error
+ * @returns {void}
+ */
+function writeCache(code, bookId, chapter, verses, keepOnQuota) {
+  const k = CACHE_PREFIX + code + ":" + bookId + ":" + chapter;
+  try { localStorage.setItem(k, JSON.stringify(verses)); }
+  catch (err) {
+    if (keepOnQuota) throw err; // let the caller decide (prefetch stops cleanly)
+    try { // free space: drop all bible cache entries, then retry once
+      Object.keys(localStorage).filter(x => x.startsWith(CACHE_PREFIX)).forEach(x => localStorage.removeItem(x));
+      localStorage.setItem(k, JSON.stringify(verses));
+    } catch { /* give up silently — content still displays this session */ }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   NETWORK — on-demand chapter loading (graceful degradation everywhere)
+   ------------------------------------------------------------------------- */
+
+/**
+ * fetch() with an abort-based timeout.
+ * @param {string} url
+ * @param {number} ms
+ * @returns {Promise<Response>}
+ */
+function fetchWithTimeout(url, ms) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { signal: ctrl.signal, cache: "force-cache" }).finally(() => clearTimeout(timer));
+}
+
+/**
+ * Resolve the active translation. getbible.net serves the authentic David
+ * Martin 1744 in French under the single code "martin", so no remote discovery
+ * is needed — we simply pin that version. Kept async to preserve the original
+ * call site in init().
+ * @returns {Promise<void>}
+ */
+async function loadTranslations() {
+  frenchTranslations = [{ code: "martin", name: "Martin 1744" }];
+  if (state.translation !== "martin") {
+    state.translation = "martin";
+    state.translationName = "Martin 1744";
+    saveState();
+  }
+}
+
+/**
+ * Fetch one chapter from getbible.net for a SPECIFIC translation code
+ * (no fallback cascade). Used by the bulk book prefetch and by fetchChapter.
+ * Endpoint: /v2/{code}/{bookId}/{chapter}.json
+ * Response: { book_name, verses: [ { verse, text }, ... ] } — already French.
+ * @param {string} code  - getbible code (here always "martin")
+ * @param {number} bookId - 1 (Genèse) … 66 (Apocalypse)
+ * @param {number} chapter - 1-based chapter number
+ * @returns {Promise<{verse:number,text:string}[]>}
+ */
+async function fetchChapterFrom(code, bookId, chapter) {
+  const res = await fetchWithTimeout(API_BASE + "/" + code + "/" + bookId + "/" + chapter + ".json", 10000);
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const data = await res.json();
+  // getbible returns verses as an array; tolerate an object map as a fallback.
+  const rawVerses = data && data.verses;
+  const list = Array.isArray(rawVerses)
+    ? rawVerses
+    : (rawVerses && typeof rawVerses === "object" ? Object.values(rawVerses) : null);
+  if (!list || !list.length) throw new Error("Vide");
+  const verses = list
+    .map(v => ({ verse: Number(v.verse) || 0, text: sanitizeApiText(v.text || "") }))
+    .filter(v => v.verse > 0 && v.text)
+    .sort((a, b) => a.verse - b.verse);
+  if (!verses.length) throw new Error("Vide");
+  return verses;
+}
+
+/**
+ * Fetch a chapter's integral text, trying the active translation then candidates.
+ * Caches the result. Throws if nothing could be retrieved.
+ * @param {number} bookId
+ * @param {number} chapter
+ * @returns {Promise<{verse:number,text:string}[]>}
+ */
+async function fetchChapter(bookId, chapter) {
+  const order = [];
+  if (state.translation) order.push(state.translation);
+  for (const c of TRANSLATION_CANDIDATES) if (!order.includes(c)) order.push(c);
+  for (const t of frenchTranslations) if (!order.includes(t.code)) order.push(t.code);
+
+  let lastErr = null;
+  for (const code of order) {
+    try {
+      const verses = await fetchChapterFrom(code, bookId, chapter);
+      if (state.translation !== code) {
+        state.translation = code;
+        const meta = frenchTranslations.find(x => x.code === code);
+        if (meta) state.translationName = meta.name;
+        saveState();
+        renderTranslationSelect();
+      }
+      writeCache(code, bookId, chapter, verses);
+      return verses;
+    } catch (err) { lastErr = err; /* try next code */ }
+  }
+  throw lastErr || new Error("Texte indisponible");
+}
+
+/* ---------------------------------------------------------------------------
+   VIEW — DOM references
+   ------------------------------------------------------------------------- */
+const els = {
+  sidebar: document.getElementById("sidebar"),
+  scrim: document.getElementById("scrim"),
+  hamburger: document.getElementById("hamburger"),
+  bookList: document.getElementById("bookList"),
+  tabOld: document.getElementById("tabOld"),
+  tabNew: document.getElementById("tabNew"),
+  searchInput: document.getElementById("searchInput"),
+  chapterSelect: document.getElementById("chapterSelect"),
+  translationSelect: document.getElementById("translationSelect"),
+  prevBtn: document.getElementById("prevBtn"),
+  nextBtn: document.getElementById("nextBtn"),
+  currentRef: document.getElementById("currentRef"),
+  reader: document.getElementById("reader"),
+  readerScroll: document.getElementById("readerScroll"),
+  downloadBookBtn: document.getElementById("downloadBookBtn"),
+  fontUpBtn: document.getElementById("fontUpBtn"),
+  fontDownBtn: document.getElementById("fontDownBtn"),
+  colorBtn: document.getElementById("colorBtn"),
+  statusDot: document.getElementById("statusDot"),
+  toast: document.getElementById("toast"),
+  dlProgress: document.getElementById("dlProgress"),
+  dlLabel: document.getElementById("dlLabel"),
+  dlBarFill: document.getElementById("dlBarFill"),
+  dlCancel: document.getElementById("dlCancel")
+};
+
+/** Render the testament tab selection state. @returns {void} */
+function renderTabs() {
+  els.tabOld.setAttribute("aria-selected", String(state.testament === "old"));
+  els.tabNew.setAttribute("aria-selected", String(state.testament === "new"));
+}
+
+/** Render the list of books for the active testament. @returns {void} */
+function renderBookList() {
+  const frag = document.createDocumentFragment();
+  const title = document.createElement("div");
+  title.className = "book-group-title";
+  title.textContent = state.testament === "old" ? "Ancien Testament" : "Nouveau Testament";
+  frag.appendChild(title);
+
+  const code = state.translation;
+  for (const book of booksOf(state.testament)) {
+    const btn = document.createElement("button");
+    btn.className = "book-btn";
+    btn.type = "button";
+    btn.dataset.book = String(book.id);
+    btn.setAttribute("aria-current", String(book.id === state.bookId && !searchMode));
+
+    const name = document.createElement("span");
+    name.textContent = book.name;
+    const count = document.createElement("span");
+    count.className = "count";
+    count.textContent = book.ch + " ch.";
+    // Show an offline badge when the whole book is available without network.
+    if (isBookComplete(book, code)) {
+      const dot = document.createElement("span");
+      dot.className = "dl-dot";
+      dot.title = "Disponible hors-ligne";
+      dot.setAttribute("aria-label", "Disponible hors-ligne");
+      count.prepend(dot);
+    }
+
+    btn.append(name, count);
+    btn.addEventListener("click", () => selectBook(book.id));
+    frag.appendChild(btn);
+  }
+  els.bookList.replaceChildren(frag);
+}
+
+/** Populate the chapter <select> for the current book. @returns {void} */
+function renderChapterSelect() {
+  const book = getBook(state.bookId);
+  if (!book) return;
+  const frag = document.createDocumentFragment();
+  for (let i = 1; i <= book.ch; i++) {
+    const opt = document.createElement("option");
+    opt.value = String(i);
+    opt.textContent = "Chapitre " + i;
+    if (i === state.chapter) opt.selected = true;
+    frag.appendChild(opt);
+  }
+  els.chapterSelect.replaceChildren(frag);
+}
+
+/** Populate the translation <select> (hidden when discovery failed). @returns {void} */
+function renderTranslationSelect() {
+  if (!frenchTranslations.length) { els.translationSelect.style.display = "none"; return; }
+  els.translationSelect.style.display = "";
+  const frag = document.createDocumentFragment();
+  for (const t of frenchTranslations) {
+    const opt = document.createElement("option");
+    opt.value = t.code;
+    opt.textContent = t.name.length > 28 ? t.name.slice(0, 27) + "…" : t.name;
+    if (t.code === state.translation) opt.selected = true;
+    frag.appendChild(opt);
+  }
+  els.translationSelect.replaceChildren(frag);
+}
+
+/** Reflect online/offline status in the status dot. @returns {void} */
+function renderStatus() {
+  const online = navigator.onLine;
+  els.statusDot.classList.toggle("online", online);
+  els.statusDot.classList.toggle("offline", !online);
+  els.statusDot.setAttribute("aria-label", online ? "En ligne" : "Hors-ligne");
+  els.statusDot.title = online ? "En ligne — texte intégral disponible" : "Hors-ligne — passages choisis uniquement";
+}
+
+/** Update the download button's look depending on the current book state. @returns {void} */
+function renderDownloadButton() {
+  const book = getBook(state.bookId);
+  if (!book) return;
+  const complete = isBookComplete(book, state.translation);
+  els.downloadBookBtn.classList.toggle("active", complete);
+  els.downloadBookBtn.title = complete
+    ? "« " + book.name + " » est disponible hors-ligne"
+    : "Télécharger « " + book.name + " » pour la lecture hors-ligne";
+}
+
+/**
+ * Build the chapter shell (notice, heading, legend) and return the verses host.
+ * @param {object} book
+ * @param {'curated'|'online'|'pending'} source
+ * @returns {{root:HTMLElement, host:HTMLElement}}
+ */
+function buildChapterShell(book, source) {
+  const root = document.createElement("div");
+
+  if (!state.noticeDismissed) {
+    const notice = document.createElement("div");
+    notice.className = "notice";
+    const txt = document.createElement("div");
+    txt.innerHTML = "📖 <strong>Les 66 livres complets, en français.</strong> Le texte intégral de chaque chapitre se charge à la demande (connexion requise) et reste en cache. Touchez <strong>📥</strong> pour télécharger un livre entier et le lire hors-ligne. Les <span class=\"w-jesus\">paroles de Jésus</span> et les <span class=\"w-god\">paroles de Dieu</span> sont mises en couleur.";
+    const close = document.createElement("button");
+    close.type = "button";
+    close.textContent = "Compris";
+    close.addEventListener("click", () => { state.noticeDismissed = true; saveState(); renderChapter(); });
+    notice.append(txt, close);
+    root.appendChild(notice);
+  }
+
+  const heading = document.createElement("h2");
+  heading.className = "chapter-heading";
+  const bk = document.createElement("span"); bk.className = "bk"; bk.textContent = book.name;
+  const ch = document.createElement("span"); ch.className = "ch"; ch.textContent = "Chapitre " + state.chapter;
+  heading.append(bk, ch);
+  root.appendChild(heading);
+
+  const legend = document.createElement("div");
+  legend.className = "legend";
+  if (source === "curated") {
+    legend.innerHTML = book.t === "new"
+      ? '<span><i class="swatch j"></i> Paroles de Jésus</span>'
+      : '<span><i class="swatch g"></i> Paroles de Dieu</span>';
+    legend.innerHTML += '<span class="source-tag curated">Passage colorisé · hors-ligne</span>';
+  } else if (source === "online") {
+    legend.innerHTML = '<span class="source-tag online">Texte intégral · ' + escapeHtml(state.translationName || "version française") + '</span>';
+    legend.innerHTML += '<span>🔖 Cliquez un verset pour le marquer</span>';
+  }
+  root.appendChild(legend);
+
+  const host = document.createElement("div");
+  host.className = "verses";
+  root.appendChild(host);
+  return { root, host };
+}
+
+/**
+ * Render an array of verses into a host element.
+ * @param {HTMLElement} host
+ * @param {{verse:number, raw?:string, text?:string}[]} verses - raw=curated markup, text=plain
+ * @returns {void}
+ */
+function renderVerses(host, verses) {
+  const frag = document.createDocumentFragment();
+  for (const v of verses) {
+    const key = verseKey(state.bookId, state.chapter, v.verse);
+    const marked = state.bookmarks.includes(key);
+    const p = document.createElement("p");
+    p.className = "verse" + (marked ? " bookmarked" : "");
+    p.id = "v" + v.verse;
+    p.dataset.key = key;
+    p.setAttribute("role", "button");
+    p.setAttribute("tabindex", "0");
+    p.setAttribute("aria-label", "Verset " + v.verse + ". Activer pour marquer.");
+    const body = v.raw != null ? renderVerseHtml(v.raw) : escapeHtml(v.text);
+    p.innerHTML = '<span class="vnum">' + v.verse + "</span>" + body +
+      (marked ? ' <span class="bm-flag" aria-hidden="true">🔖</span>' : "");
+    p.addEventListener("click", () => toggleBookmark(key));
+    p.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleBookmark(key); }
+    });
+    frag.appendChild(p);
+  }
+  host.replaceChildren(frag);
+}
+
+/**
+ * Render the currently selected chapter: curated > cache > network.
+ * @param {number} [scrollToVerse]
+ * @returns {Promise<void>}
+ */
+async function renderChapter(scrollToVerse) {
+  searchMode = false;
+  const token = ++renderToken;
+  const book = getBook(state.bookId);
+  if (!book) return;
+
+  // Sync surrounding controls immediately.
+  els.currentRef.textContent = book.name + " " + state.chapter;
+  renderChapterSelect();
+  updateNavButtons();
+  highlightActiveBook();
+  renderDownloadButton();
+  document.title = book.name + " " + state.chapter + " — Bible Martin 1744";
+
+  const cKey = curatedKey(state.bookId, state.chapter);
+
+  // 1) Curated colored chapter (offline, signature feature).
+  if (CURATED[cKey]) {
+    const { root, host } = buildChapterShell(book, "curated");
+    renderVerses(host, CURATED[cKey].map((raw, i) => ({ verse: i + 1, raw })));
+    els.reader.replaceChildren(root);
+    els.readerScroll.scrollTop = 0;
+    afterRender(scrollToVerse);
+    return;
+  }
+
+  // 2) Cached integral text.
+  const cached = state.translation ? readCache(state.translation, state.bookId, state.chapter) : null;
+  if (cached) {
+    const { root, host } = buildChapterShell(book, "online");
+    renderVerses(host, cached);
+    els.reader.replaceChildren(root);
+    els.readerScroll.scrollTop = 0;
+    afterRender(scrollToVerse);
+    return;
+  }
+
+  // 3) Network fetch with loading + error states.
+  showLoading(book);
+  try {
+    const verses = await fetchChapter(state.bookId, state.chapter);
+    if (token !== renderToken) return; // user navigated away
+    const { root, host } = buildChapterShell(book, "online");
+    renderVerses(host, verses);
+    els.reader.replaceChildren(root);
+    els.readerScroll.scrollTop = 0;
+    renderDownloadButton();
+    afterRender(scrollToVerse);
+  } catch (err) {
+    if (token !== renderToken) return;
+    console.warn("Échec du chargement du chapitre:", err);
+    showChapterError(book);
+  }
+}
+
+/** Post-render scroll/highlight to a target verse. @param {number} [verse] @returns {void} */
+function afterRender(verse) {
+  if (!verse) return;
+  const target = document.getElementById("v" + verse);
+  if (target) {
+    target.scrollIntoView({ block: "center" });
+    target.style.background = "rgba(201,162,75,.22)";
+    setTimeout(() => { target.style.background = ""; }, 1400);
+  }
+}
+
+/** Show a loading spinner for a chapter being fetched. @param {object} book @returns {void} */
+function showLoading(book) {
+  const div = document.createElement("div");
+  div.className = "state-box";
+  div.innerHTML = '<div class="spinner" role="status" aria-label="Chargement"></div>' +
+    "Chargement de <strong>" + escapeHtml(book.name) + " " + state.chapter + "</strong>…";
+  els.reader.replaceChildren(div);
+  els.readerScroll.scrollTop = 0;
+}
+
+/** Show a friendly error / offline state with a retry button. @param {object} book @returns {void} */
+function showChapterError(book) {
+  const div = document.createElement("div");
+  div.className = "state-box";
+  const off = !navigator.onLine;
+  div.innerHTML = '<span class="big">' + (off ? "📡" : "⚠️") + "</span>" +
+    (off
+      ? "Vous êtes hors-ligne. Le texte intégral de <strong>" + escapeHtml(book.name) + " " + state.chapter +
+        "</strong> n'est pas encore en cache.<br>Les passages choisis (avec coloration) restent disponibles."
+      : "Impossible de charger <strong>" + escapeHtml(book.name) + " " + state.chapter + "</strong> pour le moment.");
+  const btn = document.createElement("button");
+  btn.className = "retry-btn";
+  btn.type = "button";
+  btn.textContent = "↻ Réessayer";
+  btn.addEventListener("click", () => renderChapter());
+  div.appendChild(document.createElement("br"));
+  div.appendChild(btn);
+  els.reader.replaceChildren(div);
+}
+
+/** Enable/disable prev/next based on canon neighbors. @returns {void} */
+function updateNavButtons() {
+  const { prev, next } = neighbors(state.bookId, state.chapter);
+  els.prevBtn.disabled = !prev;
+  els.nextBtn.disabled = !next;
+}
+
+/** Mark the active book in the sidebar. @returns {void} */
+function highlightActiveBook() {
+  els.bookList.querySelectorAll(".book-btn").forEach(b => {
+    b.setAttribute("aria-current", String(Number(b.dataset.book) === state.bookId && !searchMode));
+  });
+}
+/** Clear active-book highlight (during search). @returns {void} */
+function clearActiveBook() {
+  els.bookList.querySelectorAll(".book-btn").forEach(b => b.setAttribute("aria-current", "false"));
+}
+
+/* ---------------------------------------------------------------------------
+   BOOK PREFETCH — download every chapter of the active book for offline use
+   ------------------------------------------------------------------------- */
+
+/** Show the download progress bar. @param {number} done @param {number} total @returns {void} */
+function showProgress(done, total) {
+  els.dlProgress.hidden = false;
+  updateProgress(done, total);
+}
+/** Update the progress bar fill + label. @param {number} done @param {number} total @returns {void} */
+function updateProgress(done, total) {
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  els.dlBarFill.style.width = pct + "%";
+  els.dlLabel.textContent = "Téléchargement… " + done + "/" + total + " chapitres";
+}
+/** Hide the download progress bar. @returns {void} */
+function hideProgress() { els.dlProgress.hidden = true; }
+
+/**
+ * Download all missing chapters of the current book (single coherent version),
+ * caching each one. Shows progress and can be cancelled. Re-renders the sidebar
+ * badge + button state when finished.
+ * @returns {Promise<void>}
+ */
+async function prefetchBook() {
+  const book = getBook(state.bookId);
+  if (!book) return;
+
+  const code = state.translation || TRANSLATION_CANDIDATES[0];
+  const pending = pendingChapters(book, code);
+
+  if (!pending.length) {
+    showToast("✓ « " + book.name + " » est déjà disponible hors-ligne");
+    return;
+  }
+  if (!navigator.onLine) {
+    showToast("📡 Connexion requise pour télécharger ce livre");
+    return;
+  }
+
+  prefetchAbort = false;
+  els.downloadBookBtn.disabled = true;
+  els.dlCancel.disabled = false;
+
+  const total = book.ch;
+  let done = total - pending.length; // chapters already available
+  let failed = 0, quotaHit = false;
+  showProgress(done, total);
+
+  // Sequential download keeps the source server happy and progress readable.
+  for (const c of pending) {
+    if (prefetchAbort) break;
+    try {
+      const verses = await fetchChapterFrom(code, book.id, c);
+      writeCache(code, book.id, c, verses, true); // throws on quota (keep progress)
+    } catch (err) {
+      if (err && (err.name === "QuotaExceededError" || /quota/i.test(String(err.message || "")))) {
+        quotaHit = true; break;
+      }
+      failed++;
+    }
+    done++;
+    updateProgress(done, total);
+  }
+
+  els.downloadBookBtn.disabled = false;
+  hideProgress();
+  renderBookList();
+  renderDownloadButton();
+
+  if (prefetchAbort) {
+    showToast("⏹️ Téléchargement arrêté (" + done + "/" + total + " chapitres en cache)");
+  } else if (quotaHit) {
+    showToast("💾 Espace de stockage plein — " + done + "/" + total + " chapitres enregistrés");
+  } else if (failed) {
+    showToast("⚠️ « " + book.name + " » : " + (total - failed) + "/" + total + " chapitres en cache");
+  } else {
+    showToast("✓ « " + book.name + " » est disponible hors-ligne");
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   SEARCH — over curated passages + already-cached chapters
+   ------------------------------------------------------------------------- */
+
+/**
+ * Search loaded content (curated + cached) for a query string.
+ * @param {string} query
+ * @param {number} [limit=120]
+ * @returns {{bookId:number, bookName:string, chapter:number, verse:number, text:string}[]}
+ */
+function searchLoaded(query, limit = 120) {
+  const q = normalize(query.trim());
+  const out = [];
+  if (q.length < 2) return out;
+
+  // Curated first (rich, always present).
+  for (const key of Object.keys(CURATED)) {
+    const [bid, ch] = key.split(":").map(Number);
+    const book = getBook(bid);
+    if (!book) continue;
+    CURATED[key].forEach((raw, i) => {
+      const text = plainText(raw);
+      if (normalize(text).includes(q)) {
+        out.push({ bookId: bid, bookName: book.name, chapter: ch, verse: i + 1, text });
+      }
+    });
+    if (out.length >= limit) return out.slice(0, limit);
+  }
+
+  // Then any cached chapters for the active translation.
+  if (state.translation) {
+    const prefix = CACHE_PREFIX + state.translation + ":";
+    for (const lsKey of Object.keys(localStorage)) {
+      if (!lsKey.startsWith(prefix)) continue;
+      const parts = lsKey.slice(prefix.length).split(":");
+      const bid = Number(parts[0]), ch = Number(parts[1]);
+      const book = getBook(bid);
+      if (!book || CURATED[curatedKey(bid, ch)]) continue; // avoid duplicates
+      let verses;
+      try { verses = JSON.parse(localStorage.getItem(lsKey)); } catch { continue; }
+      if (!Array.isArray(verses)) continue;
+      for (const v of verses) {
+        if (normalize(v.text || "").includes(q)) {
+          out.push({ bookId: bid, bookName: book.name, chapter: ch, verse: v.verse, text: v.text });
+          if (out.length >= limit) return out.slice(0, limit);
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Render search results into the reading pane.
+ * @param {string} query
+ * @returns {void}
+ */
+function renderSearch(query) {
+  searchMode = true;
+  ++renderToken; // cancel any pending chapter fetch render
+  const results = searchLoaded(query);
+  const container = document.createElement("div");
+  container.className = "results";
+
+  const h = document.createElement("h2");
+  h.textContent = "Résultats de recherche";
+  const sub = document.createElement("p");
+  sub.className = "sub";
+  sub.textContent = results.length
+    ? results.length + " verset(s) trouvé(s) pour « " + query + " » (passages choisis + chapitres déjà lus)"
+    : "Aucun résultat pour « " + query + " » dans les chapitres déjà chargés.";
+  container.append(h, sub);
+
+  if (!results.length) {
+    const empty = document.createElement("div");
+    empty.className = "state-box";
+    empty.innerHTML = '<span class="big">🔎</span>La recherche couvre les passages colorisés et les chapitres déjà consultés ou téléchargés.<br>Téléchargez un livre (📥) ou ouvrez d\'autres chapitres pour enrichir l\'index, ou essayez « lumière », « berger », « vérité ».';
+    container.appendChild(empty);
+  } else {
+    const qNorm = normalize(query);
+    for (const r of results) {
+      const item = document.createElement("button");
+      item.className = "result-item";
+      item.type = "button";
+      const ref = document.createElement("div");
+      ref.className = "ref";
+      ref.textContent = r.bookName + " " + r.chapter + ":" + r.verse;
+      const snip = document.createElement("div");
+      snip.className = "snippet";
+      snip.innerHTML = highlightSnippet(r.text, qNorm);
+      item.append(ref, snip);
+      item.addEventListener("click", () => goTo(r.bookId, r.chapter, r.verse));
+      container.appendChild(item);
+    }
+  }
+  els.reader.replaceChildren(container);
+  els.readerScroll.scrollTop = 0;
+  els.currentRef.textContent = "Recherche";
+  clearActiveBook();
+}
+
+/**
+ * Produce an escaped snippet with the matched query <mark>ed.
+ * @param {string} text
+ * @param {string} qNorm - already-normalized query
+ * @returns {string} safe HTML
+ */
+function highlightSnippet(text, qNorm) {
+  const safe = escapeHtml(text);
+  const at = normalize(safe).indexOf(qNorm);
+  if (at < 0) return safe;
+  const end = at + qNorm.length;
+  return safe.slice(0, at) + '<mark class="hit">' + safe.slice(at, end) + "</mark>" + safe.slice(end);
+}
+
+/* ---------------------------------------------------------------------------
+   VIEW helpers — prefs & toast
+   ------------------------------------------------------------------------- */
+
+/** Apply font size + color preferences. @returns {void} */
+function applyPrefs() {
+  document.documentElement.style.setProperty("--reading", state.fontSize + "rem");
+  document.body.classList.toggle("no-color", !state.color);
+  els.colorBtn.classList.toggle("active", state.color);
+  els.colorBtn.setAttribute("aria-pressed", String(state.color));
+}
+
+let toastTimer = null;
+/** Show a transient toast message. @param {string} msg @returns {void} */
+function showToast(msg) {
+  els.toast.textContent = msg;
+  els.toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => els.toast.classList.remove("show"), 2200);
+}
+
+/* ---------------------------------------------------------------------------
+   ACTIONS — state mutations + re-render
+   ------------------------------------------------------------------------- */
+
+/** Switch the active testament. @param {string} testament @returns {void} */
+function selectTestament(testament) {
+  if (state.testament === testament) return;
+  state.testament = testament;
+  const first = booksOf(testament)[0];
+  if (first) { state.bookId = first.id; state.chapter = 1; }
+  renderTabs(); renderBookList(); renderChapter(); saveState();
+}
+
+/** Select a book (first chapter). @param {number} bookId @returns {void} */
+function selectBook(bookId) {
+  const book = getBook(bookId);
+  if (!book) return;
+  state.bookId = bookId; state.chapter = 1; state.testament = book.t;
+  els.searchInput.value = "";
+  renderTabs(); renderBookList(); renderChapter(); closeSidebar(); saveState();
+}
+
+/**
+ * Navigate to a specific book/chapter (and optional verse anchor).
+ * @param {number} bookId
+ * @param {number} chapter
+ * @param {number} [verse]
+ * @returns {void}
+ */
+function goTo(bookId, chapter, verse) {
+  const book = getBook(bookId);
+  if (!book) return;
+  state.bookId = bookId;
+  state.chapter = Math.max(1, Math.min(chapter, book.ch));
+  state.testament = book.t;
+  els.searchInput.value = "";
+  renderTabs(); renderBookList(); closeSidebar(); saveState();
+  renderChapter(verse);
+}
+
+/** Step chapter across book boundaries. @param {number} dir @returns {void} */
+function step(dir) {
+  const { prev, next } = neighbors(state.bookId, state.chapter);
+  const target = dir < 0 ? prev : next;
+  if (target) goTo(target.bookId, target.chapter);
+}
+
+/** Toggle a verse bookmark and re-render in place. @param {string} key @returns {void} */
+function toggleBookmark(key) {
+  const i = state.bookmarks.indexOf(key);
+  if (i >= 0) { state.bookmarks.splice(i, 1); showToast("🔖 Marque-page retiré"); }
+  else { state.bookmarks.push(key); showToast("🔖 Verset marqué"); }
+  saveState();
+  // Re-render only the affected verse for efficiency.
+  const p = els.reader.querySelector('.verse[data-key="' + (window.CSS && CSS.escape ? CSS.escape(key) : key) + '"]');
+  if (p) {
+    const marked = state.bookmarks.includes(key);
+    p.classList.toggle("bookmarked", marked);
+    const flag = p.querySelector(".bm-flag");
+    if (marked && !flag) {
+      const span = document.createElement("span");
+      span.className = "bm-flag"; span.setAttribute("aria-hidden", "true"); span.textContent = " 🔖";
+      p.appendChild(span);
+    } else if (!marked && flag) { flag.remove(); }
+  }
+}
+
+/** Adjust reading font size within bounds. @param {number} delta @returns {void} */
+function adjustFont(delta) {
+  state.fontSize = Math.max(0.9, Math.min(1.7, +(state.fontSize + delta).toFixed(3)));
+  applyPrefs(); saveState();
+}
+
+/** Toggle colored words of Jesus/God. @returns {void} */
+function toggleColor() {
+  state.color = !state.color;
+  applyPrefs(); saveState();
+  showToast(state.color ? "🎨 Couleurs activées" : "🎨 Couleurs désactivées");
+}
+
+/* ---- Sidebar (mobile) ---- */
+function openSidebar() {
+  els.sidebar.classList.add("open"); els.scrim.classList.add("show");
+  els.hamburger.setAttribute("aria-expanded", "true");
+}
+function closeSidebar() {
+  els.sidebar.classList.remove("open"); els.scrim.classList.remove("show");
+  els.hamburger.setAttribute("aria-expanded", "false");
+}
+
+/* ---------------------------------------------------------------------------
+   EVENT WIRING
+   ------------------------------------------------------------------------- */
+els.tabOld.addEventListener("click", () => selectTestament("old"));
+els.tabNew.addEventListener("click", () => selectTestament("new"));
+els.prevBtn.addEventListener("click", () => step(-1));
+els.nextBtn.addEventListener("click", () => step(1));
+els.chapterSelect.addEventListener("change", (e) => {
+  state.chapter = parseInt(e.target.value, 10) || 1; saveState(); renderChapter();
+});
+els.translationSelect.addEventListener("change", (e) => {
+  state.translation = e.target.value;
+  const meta = frenchTranslations.find(t => t.code === state.translation);
+  if (meta) state.translationName = meta.name;
+  saveState();
+  showToast("📘 Version : " + (state.translationName || state.translation));
+  renderBookList();
+  if (!searchMode) renderChapter();
+});
+els.downloadBookBtn.addEventListener("click", () => prefetchBook());
+els.dlCancel.addEventListener("click", () => { prefetchAbort = true; els.dlCancel.disabled = true; });
+els.fontUpBtn.addEventListener("click", () => adjustFont(0.08));
+els.fontDownBtn.addEventListener("click", () => adjustFont(-0.08));
+els.colorBtn.addEventListener("click", toggleColor);
+els.hamburger.addEventListener("click", openSidebar);
+els.scrim.addEventListener("click", closeSidebar);
+window.addEventListener("online", renderStatus);
+window.addEventListener("offline", renderStatus);
+
+// Debounced search
+let searchTimer = null;
+els.searchInput.addEventListener("input", (e) => {
+  const q = e.target.value;
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    if (q.trim().length >= 2) renderSearch(q);
+    else if (searchMode) renderChapter();
+  }, 240);
+});
+
+// Keyboard navigation (ignored while typing in search)
+document.addEventListener("keydown", (e) => {
+  if (document.activeElement === els.searchInput) {
+    if (e.key === "Escape") { els.searchInput.value = ""; els.searchInput.blur(); if (searchMode) renderChapter(); }
+    return;
+  }
+  if (e.key === "ArrowRight") step(1);
+  else if (e.key === "ArrowLeft") step(-1);
+  else if (e.key === "Escape") closeSidebar();
+});
+
+/* ---------------------------------------------------------------------------
+   SELF-TESTS — run with ?test in the URL (results in console)
+   ------------------------------------------------------------------------- */
+function runSelfTests() {
+  let pass = 0, fail = 0;
+  const assert = (cond, label) => {
+    if (cond) { pass++; console.log("%c✓ " + label, "color:#5fbf6f"); }
+    else { fail++; console.error("✗ " + label); }
+  };
+
+  assert(escapeHtml('<img src=x onerror=alert(1)>') === '&lt;img src=x onerror=alert(1)&gt;', "escapeHtml neutralise les balises");
+  assert(!escapeHtml('"\'&').includes("<"), "escapeHtml encode quotes & esperluette");
+
+  const r = renderVerseHtml('Dieu dit: {g}lumière<>{/g} et {j}vie{/j}');
+  assert(r.includes('<span class="w-god">') && r.includes('<span class="w-jesus">'), "renderVerseHtml produit les spans colorés");
+  assert(r.includes('lumière&lt;&gt;'), "renderVerseHtml échappe le contenu");
+
+  assert(plainText('{j}a{/j}b{g}c{/g}') === 'abc', "plainText retire les marqueurs");
+  assert(normalize('Lumière') === 'lumiere', "normalize supprime les accents");
+
+  assert(sanitizeApiText('Au <S>2233</S>commencement<sup>1</sup> &nbsp; Dieu[1]') === 'Au commencement Dieu', "sanitizeApiText nettoie Strong/notes/HTML");
+  assert(sanitizeApiText('<i>texte</i>   espacé') === 'texte espacé', "sanitizeApiText supprime les tags et compacte");
+
+  // Source configuration (getbible.net Martin 1744)
+  assert(API_BASE === "https://api.getbible.net/v2", "API_BASE pointe vers getbible.net v2");
+  assert(TRANSLATION_CANDIDATES[0] === "martin", "code de version = martin");
+  assert(state.translation === "martin", "état épinglé sur la Martin française");
+
+  // Canon integrity
+  assert(BOOKS.length === 66, "66 livres présents");
+  assert(booksOf("old").length === 39 && booksOf("new").length === 27, "39 AT + 27 NT");
+  assert(BOOKS.every((b, i) => b.id === i + 1), "ids consécutifs 1..66");
+  assert(getBook(19).ch === 150, "Psaumes a 150 chapitres");
+  assert(getBook(40).name === "Matthieu" && getBook(40).t === "new", "Matthieu = livre 40 (NT)");
+  const totalChapters = BOOKS.reduce((s, b) => s + b.ch, 0);
+  assert(totalChapters === 1189, "1189 chapitres au total dans le canon");
+
+  // Neighbors across the whole canon
+  assert(neighbors(1, 1).prev === null, "Genèse 1 n'a pas de précédent");
+  assert(neighbors(66, 22).next === null, "Apocalypse 22 n'a pas de suivant");
+  const cross = neighbors(39, 4); // Malachie 4 -> Matthieu 1
+  assert(cross.next && cross.next.bookId === 40 && cross.next.chapter === 1, "Malachie 4 → Matthieu 1 (passage AT→NT)");
+  const back = neighbors(40, 1); // Matthieu 1 -> Malachie 4
+  assert(back.prev && back.prev.bookId === 39 && back.prev.chapter === 4, "Matthieu 1 ← Malachie 4");
+
+  // Curated integrity: keys valid, chapters in range, markers balanced
+  let curatedOk = true, balanced = true;
+  for (const key of Object.keys(CURATED)) {
+    const [bid, ch] = key.split(":").map(Number);
+    const book = getBook(bid);
+    if (!book || ch < 1 || ch > book.ch) curatedOk = false;
+    for (const v of CURATED[key]) {
+      try { renderVerseHtml(v); } catch { curatedOk = false; }
+      const jo = (v.match(/\{j\}/g) || []).length, jc = (v.match(/\{\/j\}/g) || []).length;
+      const go = (v.match(/\{g\}/g) || []).length, gc = (v.match(/\{\/g\}/g) || []).length;
+      if (jo !== jc || go !== gc) balanced = false;
+    }
+  }
+  assert(curatedOk, "tous les passages colorisés pointent vers des chapitres valides");
+  assert(balanced, "marqueurs {j}/{g} équilibrés dans les passages colorisés");
+
+  assert(frenchRank("La Bible David Martin 1744") === 0, "frenchRank place Martin en premier");
+  assert(frenchRank("Louis Segond 1910") === 2, "frenchRank classe Segond");
+
+  assert(verseKey(43, 3, 16) === '43:3:16', "verseKey génère une clé stable");
+  assert(searchLoaded('berger').some(x => x.bookName === 'Psaumes'), "recherche trouve « berger » (Psaume 23 colorisé)");
+  assert(searchLoaded('z').length === 0, "recherche ignore les requêtes trop courtes");
+
+  // Prefetch helpers (curated chapters are always "available offline")
+  const ruth = getBook(8); // 4 chapters, none curated
+  assert(pendingChapters(ruth, "").length === 4, "pendingChapters: Ruth sans cache = 4 chapitres");
+  assert(!isBookComplete(ruth, ""), "isBookComplete: Ruth non disponible hors-ligne au départ");
+  const abdias = getBook(31); // single chapter, not curated
+  assert(pendingChapters(abdias, "").length === 1, "pendingChapters: Abdias = 1 chapitre");
+
+  console.log("%cAuto-tests Bible : " + pass + " réussis, " + fail + " échoués",
+    "font-weight:bold;color:" + (fail ? "#ff5d5d" : "#5fbf6f"));
+  return { pass, fail };
+}
+
+/* ---------------------------------------------------------------------------
+   BOOTSTRAP
+   ------------------------------------------------------------------------- */
+async function init() {
+  applyPrefs();
+  renderTabs();
+  renderBookList();
+  renderStatus();
+  renderTranslationSelect();
+  renderDownloadButton();
+  renderChapter(); // shows curated/cached instantly; fetches if needed
+
+  if (new URLSearchParams(location.search).has("test")) runSelfTests();
+
+  // Resolve the Martin 1744 version (getbible.net), then refresh if useful.
+  if (navigator.onLine) {
+    await loadTranslations();
+    renderTranslationSelect();
+    renderBookList();
+    renderDownloadButton();
+    // If the current chapter needs online text and isn't loaded yet, refresh.
+    const cKey = curatedKey(state.bookId, state.chapter);
+    if (!CURATED[cKey] && !(state.translation && readCache(state.translation, state.bookId, state.chapter))) {
+      if (!searchMode) renderChapter();
+    }
+  }
+}
+
+// Guard the whole boot so a content error never leaves a blank screen.
+try {
+  init();
+} catch (err) {
+  console.error("Erreur d'initialisation:", err);
+  document.getElementById("reader").innerHTML =
+    '<div class="state-box"><span class="big">⚠️</span>Une erreur est survenue au chargement.</div>';
+}
+</script>
+</body>
+</html>
